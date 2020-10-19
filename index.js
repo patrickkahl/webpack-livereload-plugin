@@ -41,11 +41,11 @@ function generateHashCode(str) {
   return hash.digest('hex');
 }
 
-function fileIgnoredOrNotEmitted(data) {
+function fileIgnored(data) {
   if (Array.isArray(this.ignore)) {
-    return !anymatch(this.ignore, data[0]) && data[1].emitted;
+    return !anymatch(this.ignore, data[0]);
   }
-  return !data[0].match(this.ignore) && data[1].emitted;
+  return !data[0].match(this.ignore);
 }
 
 function fileHashDoesntMatches(data) {
@@ -112,7 +112,8 @@ LiveReloadPlugin.prototype.done = function done(stats) {
   var childHashes = (stats.compilation.children || []).map(child => child.hash);
 
   var include = Object.entries(stats.compilation.assets)
-      .filter(fileIgnoredOrNotEmitted.bind(this))
+      .filter(file => stats.compilation.emittedAssets.has(file[0]))
+      .filter(fileIgnored.bind(this))
       .filter(fileHashDoesntMatches.bind(this))
       .map(function(data) {
         return data[0];
@@ -173,3 +174,4 @@ LiveReloadPlugin.prototype.apply = function apply(compiler) {
 };
 
 module.exports = LiveReloadPlugin;
+
